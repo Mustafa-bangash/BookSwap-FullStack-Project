@@ -81,7 +81,8 @@ const userLogin=asyncHandler(async(req,res)=>
         email:email
         });
 
-    
+        
+
         if(!user) throw new ApiError(404,"user not found")
 
     const isPasswordValid=await user.isPasswordCorrect(password);
@@ -121,8 +122,11 @@ const resetPassword=asyncHandler(async(req,res)=>
 
     if(!(newPassword || oldPassword)) throw new ApiError(400,"new password is required");
 
-    const user=await User.findById(req.user_id);
+    console.log(req.user);
 
+    const user=await User.findById(req.user._id);
+
+            console.log("user::",user);
 
     const isPasswordCorrect=await user.isPasswordCorrect(oldPassword);
 
@@ -136,6 +140,9 @@ const resetPassword=asyncHandler(async(req,res)=>
     )
 
 });
+
+
+ 
 
 
 export {
