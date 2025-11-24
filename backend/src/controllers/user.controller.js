@@ -69,6 +69,8 @@ const generateAccessAndRefreshTokens = async(userId) =>{
         throw new ApiError(500, "Something went wrong while generating referesh and access token")
     }
 }
+
+
 const userLogin=asyncHandler(async(req,res)=>
 {
     const {email,password}=req.body;
@@ -113,8 +115,32 @@ const userLogin=asyncHandler(async(req,res)=>
 })
 
 
+const resetPassword=asyncHandler(async(req,res)=>
+{
+    const {newPassword,oldPassword}=req.body;
+
+    if(!(newPassword || oldPassword)) throw new ApiError(400,"new password is required");
+
+    const user=await User.findById(req.user_id);
+
+
+    const isPasswordCorrect=await user.isPasswordCorrect(oldPassword);
+
+    if(!isPasswordCorrect) throw new ApiError(409,"wrong password");
+
+    user.password=newPassword;
+    await user.save();
+
+    user.status(200).json(
+        new ApiResponse(200,user,"password changed successfully")
+    )
+
+});
+
+
 export {
     registerUser,
     userLogin,
+    resetPassword
     
 }
