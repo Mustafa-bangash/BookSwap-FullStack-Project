@@ -135,11 +135,18 @@ const resetPassword=asyncHandler(async(req,res)=>
     user.password=newPassword;
     await user.save();
 
-    user.status(200).json(
+    res.status(200).json(
         new ApiResponse(200,user,"password changed successfully")
     )
 
 });
+
+
+
+const logout=asyncHandler(async(req,res)=>
+{
+    req.clear
+})
 
 
  
