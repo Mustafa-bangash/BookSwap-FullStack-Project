@@ -1,109 +1,121 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-
-// ----------------------
-// ✅ ZOD Schema
-// ----------------------
-const LoginSchema = z.object({
-  email: z.string().email("Invalid email format"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+import axios from "axios";
+import { FiLogIn } from "react-icons/fi";
 
 export const Login = () => {
-  // ----------------------
-  // ✅ Form Setup (React Hook Form + Zod)
-  // ----------------------
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm({
-    resolver: zodResolver(LoginSchema),
-  });
+  } = useForm();
 
-  // ----------------------
-  // ✅ TanStack Query Mutation (API call)
-  // ----------------------
   const loginMutation = useMutation({
     mutationFn: async (data) => {
-      const res = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      return res.json();
+      const res = await axios.post(
+        "http://localhost:8000/api/v1/users/login",
+        data,
+      
+      );
+      return res.data;
+    },
+    onSuccess: (data) => {
+      alert("Login Successful!");
+      console.log("Success:", data);
+    },
+    onError: (err) => {
+      alert("Login Failed");
+      console.log("Error:", err);
     },
   });
 
-  const onSubmit = (data) => {
-    loginMutation.mutate(data);
-  };
+  const onSubmit = (data) => loginMutation.mutate(data);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0D0C1D] px-6">
-      <div className="bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl rounded-xl w-full max-w-md p-8">
-        
-        {/* Platform Name */}
-        <h1 className="text-white text-3xl font-semibold text-center mb-6 tracking-wide">
+    <div className="h-full w-full mt-55 bg-[#0c1222] flex items-center justify-center px-4">
+
+      {/* LEFT HEADER (Only Project Name as requested) */}
+      <div className="absolute top-10 left-10">
+        <h1 className="text-white text-2xl font-semibold flex items-center gap-2">
           📚 BookSwap
         </h1>
+      </div>
 
-        {/* Form */}
+      {/* MAIN LOGIN CARD */}
+      <div className="bg-[#111827] border border-gray-700 rounded-3xl shadow-xl w-full max-w-xl p-10">
+
+        {/*  TOP TABS */}
+        <div className="flex items-center justify-between border-b border-gray-700 pb-4 mb-6">
+          <div className="flex items-center gap-2 text-white text-lg font-semibold">
+            <FiLogIn className="text-gray-300" />
+            Log in
+          </div>
+
+          
+        </div>
+
+        <p className="text-gray-300 mb-6">
+          Use your email and password to access your account.
+        </p>
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-          {/* Email */}
+         
           <div>
-            <label className="text-white block mb-1">Email</label>
+            <label className="text-gray-300 block mb-2 pr-[470px] text-[18px]">Email</label>
             <input
               type="email"
-              {...register("email")}
-              className="w-full p-3 rounded-md bg-[#ffffff15] border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter your email"
+              {...register("email", { required: "Email is required" })}
+              className="w-full px-4 py-3 bg-[#0c1222] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
+              placeholder="you@example.com"
             />
             {errors.email && (
-              <p className="text-red-400 text-sm mt-1">
-                {errors.email.message}
-              </p>
+              <p className="text-red-400 text-sm mt-1">{errors.email.message}</p>
             )}
           </div>
 
-          {/* Password */}
+        
           <div>
-            <label className="text-white block mb-1">Password</label>
+            <label className="text-gray-300 block mb-2 pr-[470px] text-[18px]">Password</label>
             <input
               type="password"
-              {...register("password")}
-              className="w-full p-3 rounded-md bg-[#ffffff15] border border-white/30 text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              {...register("password", {
+                required: "Password is required",
+                minLength: { value: 6, message: "Minimum 6 characters" },
+              })}
+              className="w-full px-4 py-3 bg-[#0c1222] border border-gray-700 text-white rounded-xl focus:ring-2 focus:ring-blue-500 outline-none"
               placeholder="Enter your password"
             />
             {errors.password && (
-              <p className="text-red-400 text-sm mt-1">
-                {errors.password.message}
-              </p>
+              <p className="text-red-400 text-sm mt-1">{errors.password.message}</p>
             )}
           </div>
 
-          {/* Error from API */}
-          {loginMutation.isError && (
-            <p className="text-red-400 text-sm text-center">
-              {loginMutation.error.message}
-            </p>
-          )}
+          {/* REMEMBER + FORGOT */}
+          <div className="flex items-center justify-between text-gray-400 text-sm">
+            <label className="flex items-center gap-2">
+              <input type="checkbox" className="accent-blue-500" />
+              Remember me
+            </label>
+          
+             <a href="/register" className=" text-sm hover:text-white">
+                 Create your account
+             </a>
+             
+            
 
-          {/* Submit Button */}
+            <button className="hover:text-white">Forgot password?</button>
+          </div>
+
+          {/* LOGIN BUTTON */}
+          
           <button
             type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 transition text-white py-3 rounded-md font-medium"
+            className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl text-lg transition"
           >
-            {loginMutation.isPending ? "Logging in..." : "Login"}
+            <FiLogIn />
+            {loginMutation.isPending ? "Logging in..." : "Continue"}
           </button>
         </form>
       </div>
