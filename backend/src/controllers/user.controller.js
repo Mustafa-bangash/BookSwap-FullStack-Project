@@ -143,10 +143,42 @@ const resetPassword=asyncHandler(async(req,res)=>
 
 
 
-const logout=asyncHandler(async(req,res)=>
-{
-    req.clear
-})
+const userLogOut = asyncHandler(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1,
+            },
+        },
+        {
+            new: true,
+        }
+    );
+
+    const options = {
+        httpOnly: true,
+        secure: true,
+    };
+
+    res.status(200)
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "user logout successfully"));
+});
+
+
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    const user = req?.user;
+    if (!user) {
+        throw new ApiError(401, "no user found");
+    }
+
+    res.status(200).json(new ApiResponse(200, user, "user found"));
+});
+
+
 
 
  
@@ -155,6 +187,8 @@ const logout=asyncHandler(async(req,res)=>
 export {
     registerUser,
     userLogin,
-    resetPassword
+    resetPassword,
+    getCurrentUser,
+    userLogOut
     
 }
